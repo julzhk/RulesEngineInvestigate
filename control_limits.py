@@ -63,6 +63,11 @@ def apply_rule(rule, data, data_types=None):
     resolver = None if using_dicts else rule_engine.resolve_attribute
     type_resolver = data_types
     context = rule_engine.Context(resolver=resolver, type_resolver=type_resolver)
+    string_starts_with = lambda x, y: x.startswith(y)
+    if using_dicts:
+        data["startswith"] = string_starts_with
+    else:
+        data.startswith = string_starts_with
     r = rule_engine.Rule(rule, context=context).matches(data)
     return r
 

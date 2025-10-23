@@ -81,11 +81,13 @@ def test_in_with_type_checking():
     }
     data_types = {
         "value": rules_type.FLOAT,
-        "target": rules_type.ARRAY(rules_type.FLOAT)
+        "target": rules_type.ARRAY(rules_type.FLOAT),
     }
     rule = "value in target"
     r = apply_rule(rule, data, data_types)
     assert r == True
+
+
 def test_in_with_type_checking_fails_deeper_type():
     data = {
         "value": 3,
@@ -93,7 +95,7 @@ def test_in_with_type_checking_fails_deeper_type():
     }
     data_types = {
         "value": rules_type.FLOAT,
-        "target": rules_type.ARRAY(rules_type.STRING)
+        "target": rules_type.ARRAY(rules_type.STRING),
     }
     rule = "value in target"
     with pytest.raises(Exception):
@@ -114,25 +116,25 @@ def test_in_raises_exception():
         apply_rule(rule, data, data_types)
 
 
-   # "eq": lambda column: column.__eq__,
-        # "gt": lambda column: column.__gt__,
-        # "lt": lambda column: column.__lt__,
-        # "gte": lambda column: column.__ge__,
-        # "lte": lambda column: column.__le__,
-        # "ne": lambda column: column.__ne__,
-        # "is": lambda column: column.is_,
-        # "is_not": lambda column: column.is_not,
-        # "like": lambda column: column.like,
-        # "notlike": lambda column: column.notlike,
-        # "ilike": lambda column: column.ilike,
-        # "notilike": lambda column: column.notilike,
-        # "startswith": lambda column: column.startswith,
-        # "endswith": lambda column: column.endswith,
-        # "contains": lambda column: column.contains,
-        # "match": lambda column: column.match,
-        # "between": lambda column: column.between,
-        # "in": lambda column: column.in_,
-        # "not_in": lambda column: column.not_in,
-        # "or": lambda column: column.or_,
-        # "not": lambda column: column.not_,
-    # }
+@pytest.mark.parametrize(
+    "needle, haystack, expected",
+    [
+        ("v", "abc", False),
+        ("a", "abc", True),
+        ("d", "abc", False),
+        ("", "abc", True),
+    ],
+)
+def test_custom_function(needle, haystack, expected):
+    data = {
+        "needle": needle,
+        "haystack": haystack,
+    }
+    rule = "startswith(haystack, needle)"
+    r = apply_rule(
+        rule,
+        data,
+    )
+    assert r == expected
+
+
