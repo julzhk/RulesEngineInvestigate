@@ -1,0 +1,10 @@
+[project]
+name = "controllimits"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "notebook>=7.4.7",
+    "pytest>=8.4.2",
+    "rule-engine>=4.5.3",
+]
