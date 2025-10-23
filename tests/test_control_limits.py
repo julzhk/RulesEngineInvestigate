@@ -74,6 +74,20 @@ def test_given_an_integer_is_it_in_the_range(value, target, expected):
     assert results == expected
 
 
+def test_in_with_type_checking():
+    data = {
+        "value": 3,
+        "target": range(0, 100),
+    }
+    data_types = {
+        "value": rules_type.FLOAT,
+        "target": rules_type.ARRAY,
+    }
+    rule = "value in target"
+    r = apply_rule(rule, data, data_types)
+    assert r == True
+
+
 def test_in_raises_exception():
     data = {
         "value": "value",
