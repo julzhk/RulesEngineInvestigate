@@ -29,27 +29,41 @@ class SieveData:
     # examples=[100.0, 60.0, 50.0, 90.0, 100.0],
     sieve_standard: str = 'astm'
 
-    def get_sieve_data(self, item:str) :
+    def get_sieve_data(self, item: str):
         index = self.sieve_size.index(item)
         datum = SieveResult(
             name=item,
-            pc_retained= self.pc_retained[index],
+            pc_retained=self.pc_retained[index],
             cum_passing_pct=self.cum_passing_pct[index],
             cum_retained_pct=self.cum_retained_pct[index],
         )
         return datum
 
-    def __sub__(self, other:'SieveData'):
+    def __sub__(self, other: 'SieveData'):
         return SieveData(
             sieve_size=self.sieve_size,
             pc_retained=subtract_lists(self.pc_retained, other.pc_retained),
-            cum_passing_pct=subtract_lists(self.cum_retained_pct,other.cum_passing_pct),
-            cum_retained_pct=subtract_lists(self.cum_retained_pct,other.cum_retained_pct)
-                         )
+            cum_passing_pct=subtract_lists(self.cum_retained_pct, other.cum_passing_pct),
+            cum_retained_pct=subtract_lists(self.cum_retained_pct, other.cum_retained_pct)
+        )
 
-def apply_rule(rule,data):
+def apply_rule(rule, data, data_types=None):
     rule = convert_from_if_then_format(rule)
-    context = rule_engine.Context(resolver=rule_engine.resolve_attribute)
+    def type_resolver(name):
+        try:
+            data_type = data_types[name]
+            return data_type
+        except KeyError:
+            # if the variable is not known, raise a SymbolResolutionError
+            raise rule_engine.errors.SymbolResolutionError(name)
+    using_dicts = (type(data) == dict)
+    context = None
+    if not using_dicts:
+        context = rule_engine.Context(
+            resolver=rule_engine.resolve_attribute)
+    if data_types is not None:
+        context.type_resolver=type_resolver
+
     r = rule_engine.Rule(
         rule,
         context=context
@@ -57,13 +71,14 @@ def apply_rule(rule,data):
     return r
 
 def convert_from_if_then_format(rule):
+    # convert if...require syntax to ternary operator format
     if rule.startswith('if '):
         rule = rule.replace('if ', '')
         rule = rule.replace(' require ', ' ? ')
         rule += ' : true'
     return rule
 
-def sieve_data_conforms(data:SieveData, rules: list[str]) -> bool:
+def sieve_data_conforms(data: SieveData, rules: list[str]) -> bool:
     for sieve_size in data.sieve_size:
         sieve_data = data.get_sieve_data(sieve_size)
         for rule in rules:
@@ -71,3 +86,6 @@ def sieve_data_conforms(data:SieveData, rules: list[str]) -> bool:
             if row_result == False:
                 raise ControlLimitException(f"Rule {rule} failed for {sieve_data}  ")
     return True
+
+def range_sieve_check(name, lt, gt) -> str:
+    return f'if name == "{name}" require (pc_retained >={lt}  and pc_retained <= {gt})'
