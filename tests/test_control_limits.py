@@ -119,15 +119,15 @@ def test_in_raises_exception():
 @pytest.mark.parametrize(
     "needle, haystack, expected, rule_text",
     [
-        ("v", "abc", False, "startswith(needle, haystack)"),
-        ("a", "abc", True, "startswith(needle, haystack)"),
-        ("d", "abc", False, "startswith(needle, haystack)"),
-        ("", "abc", True, "startswith(needle, haystack)"),
-        ("v", "abc", False, "contains(needle, haystack)"),
-        ("a", "abc", True, "contains(needle, haystack)"),
+        ("v", "abc", False, "$startswith(needle, haystack)"),
+        ("a", "abc", True, "$startswith(needle, haystack)"),
+        ("d", "abc", False, "$startswith(needle, haystack)"),
+        ("", "abc", True, "$startswith(needle, haystack)"),
+        ("v", "abc", False, "$contains(needle, haystack)"),
+        ("a", "abc", True, "$contains(needle, haystack)"),
         ("a", "abc", True, "needle in haystack"),
-        ("d", "abc", False, "contains(needle, haystack)"),
-        ("c", "abc", True, "contains(needle, haystack)"),
+        ("d", "abc", False, "$contains(needle, haystack)"),
+        ("c", "abc", True, "$contains(needle, haystack)"),
     ],
 )
 def test_custom_function(needle, haystack, expected, rule_text):

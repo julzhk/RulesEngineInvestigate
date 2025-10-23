@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import rule_engine
+from rule_engine.builtins import Builtins
 
 
 class ControlLimitException(Exception):
@@ -56,21 +57,24 @@ class SieveData:
         )
 
 
+class CustomBuiltinsContext(rule_engine.Context):
+    def __init__(self, *args, **kwargs):
+        super(CustomBuiltinsContext, self).__init__(*args, **kwargs)
+        self.builtins = Builtins.from_defaults(
+            {
+                "startswith": lambda x, y: y.startswith(x),
+                "contains": lambda x, y: x in y,
+            },
+        )
+
+
 def apply_rule(rule, data, data_types=None):
     rule = convert_from_if_then_format(rule)
 
     using_dicts = type(data) == dict
     resolver = None if using_dicts else rule_engine.resolve_attribute
     type_resolver = data_types
-    context = rule_engine.Context(resolver=resolver, type_resolver=type_resolver)
-    string_starts_with = lambda x, y: y.startswith(x)
-    string_contains = lambda x, y: x in y
-    if using_dicts:
-        data["startswith"] = string_starts_with
-        data["contains"] = string_contains
-    else:
-        data.startswith = string_starts_with
-        data.contains = string_contains
+    context = CustomBuiltinsContext(resolver=resolver, type_resolver=type_resolver)
     r = rule_engine.Rule(rule, context=context).matches(data)
     return r
 
