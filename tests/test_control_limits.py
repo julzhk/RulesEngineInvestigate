@@ -74,6 +74,32 @@ def test_given_an_integer_is_it_in_the_range(value, target, expected):
     assert results == expected
 
 
+def test_in_with_type_checking():
+    data = {
+        "value": 3,
+        "target": range(0, 100),
+    }
+    data_types = {
+        "value": rules_type.FLOAT,
+        "target": rules_type.ARRAY(rules_type.FLOAT)
+    }
+    rule = "value in target"
+    r = apply_rule(rule, data, data_types)
+    assert r == True
+def test_in_with_type_checking_fails_deeper_type():
+    data = {
+        "value": 3,
+        "target": range(0, 100),
+    }
+    data_types = {
+        "value": rules_type.FLOAT,
+        "target": rules_type.ARRAY(rules_type.STRING)
+    }
+    rule = "value in target"
+    with pytest.raises(Exception):
+        r = apply_rule(rule, data, data_types)
+
+
 def test_in_raises_exception():
     data = {
         "value": "value",
@@ -81,7 +107,7 @@ def test_in_raises_exception():
     }
     data_types = {
         "value": rules_type.FLOAT,
-        "target": rules_type.ARRAY,
+        "target": rules_type.ARRAY(rules_type.FLOAT),
     }
     rule = "value in target"
     with pytest.raises(Exception):

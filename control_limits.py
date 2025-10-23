@@ -59,21 +59,10 @@ class SieveData:
 def apply_rule(rule, data, data_types=None):
     rule = convert_from_if_then_format(rule)
 
-    def type_resolver(name):
-        try:
-            data_type = data_types[name]
-            return data_type
-        except KeyError:
-            # if the variable is not known, raise a SymbolResolutionError
-            raise rule_engine.errors.SymbolResolutionError(name)
-
     using_dicts = type(data) == dict
-    context = None
-    if not using_dicts:
-        context = rule_engine.Context(resolver=rule_engine.resolve_attribute)
-    if data_types is not None:
-        context.type_resolver = type_resolver
-
+    resolver = None if using_dicts else rule_engine.resolve_attribute
+    type_resolver = data_types
+    context = rule_engine.Context(resolver=resolver, type_resolver=type_resolver)
     r = rule_engine.Rule(rule, context=context).matches(data)
     return r
 
